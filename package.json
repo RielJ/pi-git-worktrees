@@ -1,0 +1,52 @@
+{
+  "name": "pi-git-worktrees",
+  "version": "0.1.0",
+  "description": "Parallel AI agent sessions using git worktrees for Pi — spawn, orchestrate, and gather results across multiple coding agents",
+  "type": "module",
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'no tests yet'"
+  },
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "pi-extension",
+    "git-worktree",
+    "parallel-agents",
+    "orchestration",
+    "tmux",
+    "ai-agents",
+    "coding-agent",
+    "multi-agent"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rielj/pi-git-worktrees.git"
+  },
+  "homepage": "https://github.com/rielj/pi-git-worktrees#readme",
+  "bugs": {
+    "url": "https://github.com/rielj/pi-git-worktrees/issues"
+  },
+  "author": "rielj",
+  "files": [
+    "src/",
+    "assets/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
+    "@sinclair/typebox": "*"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.0"
+  },
+  "license": "MIT"
+}

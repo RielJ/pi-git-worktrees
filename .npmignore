@@ -1,0 +1,25 @@
+# Dev / build artifacts
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Project docs (not needed for extension users)
+docs/
+PLAN.md
+copy-assets.sh
+
+# Git / Pi internal
+.git/
+.pi/
+.gitignore
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
