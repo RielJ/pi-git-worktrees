@@ -35,7 +35,6 @@
   "author": "rielj",
   "files": [
     "src/",
-    "assets/",
     "README.md",
     "LICENSE"
   ],
