@@ -97,16 +97,20 @@ function renderBox(
   const row1Content = `${icon} ${name}`;
   const row1 = leftB + pad(row1Content, w) + rightB;
 
-  // Row 2: status word
+  // Row 2: branch
+  const branchText = theme.fg("dim", truncPlain(data.branch || "—", w));
+  const row2 = leftB + pad(branchText, w) + rightB;
+
+  // Row 3: status word
   const stColor = statusColor(data.status);
   const stWord = theme.fg(stColor, truncPlain(data.status, w));
-  const row2 = leftB + pad(stWord, w) + rightB;
+  const row3 = leftB + pad(stWord, w) + rightB;
 
-  // Row 3: summary
+  // Row 4: summary
   const summary = theme.fg("dim", truncPlain(data.summary || "—", w));
-  const row3 = leftB + pad(summary, w) + rightB;
+  const row4 = leftB + pad(summary, w) + rightB;
 
-  return [topBorder, row1, row2, row3, botBorder];
+  return [topBorder, row1, row2, row3, row4, botBorder];
 }
 
 // ── Widget Class ────────────────────────────────────────────────────
@@ -213,12 +217,12 @@ export class WorktreeWidget {
     const visibleBoxes = boxes.slice(0, maxBoxes);
     const overflow = boxes.length - visibleBoxes.length;
 
-    // Render each visible box (each is 5 lines)
+    // Render each visible box (each is 6 lines)
     const renderedBoxes = visibleBoxes.map((b) => renderBox(b, this.frame, theme));
 
     // Merge horizontally: zip lines side by side
     const lines: string[] = [];
-    const numRows = 5; // top border, row1, row2, row3, bottom border
+    const numRows = 6; // top border, row1 (name), row2 (branch), row3 (status), row4 (summary), bottom border
 
     for (let row = 0; row < numRows; row++) {
       let line = "";
@@ -227,7 +231,7 @@ export class WorktreeWidget {
         line += renderedBoxes[i][row];
       }
       // Overflow indicator on the middle row
-      if (overflow > 0 && row === 2) {
+      if (overflow > 0 && row === 3) {
         line += " " + theme.fg("dim", `+${overflow}`);
       }
       lines.push(truncateToWidth(line, termWidth));

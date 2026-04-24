@@ -25,8 +25,10 @@ export interface WorktreeRecord {
   id: string;
   /** Absolute path to the worktree directory */
   worktreePath: string;
-  /** Git branch name, e.g. "feat/fix-auth" */
+  /** Internal git branch name used by the worktree, e.g. "_wt/feat/fix-auth" */
   branch: string;
+  /** User-facing target branch name, e.g. "feat/fix-auth". The user can freely checkout this branch. */
+  targetBranch?: string;
   /** Agent lifecycle status */
   status: WorktreeStatus;
   /** Original task description */

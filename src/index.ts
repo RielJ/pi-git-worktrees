@@ -106,7 +106,7 @@ function getBoxData(): WorktreeBoxData[] {
     boxes.push({
       id: record.id,
       name: record.id,
-      branch: record.branch,
+      branch: record.targetBranch || record.branch,
       status,
       summary,
       isActive: activeWorktreeId === record.id,
@@ -500,7 +500,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
           if (diff) {
             pi.sendMessage({
               customType: "worktree-diff",
-              content: `## Diff: ${record.branch}\n\`\`\`\n${diff}\n\`\`\``,
+              content: `## Diff: ${record.targetBranch || record.branch}\n\`\`\`\n${diff}\n\`\`\``,
               display: true,
             });
             return `Diff shown for ${id}`;
@@ -687,7 +687,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
           cwd: record.worktreePath, encoding: "utf-8", timeout: 10_000,
         });
 
-        const content = `## Worktree: ${id}\n\n**Branch:** ${record.branch}\n**Path:** ${record.worktreePath}\n\n### Changed files\n\`\`\`\n${status.trim() || "(no changes)"}\n\`\`\`\n\n### Diff\n\`\`\`diff\n${diff.trim() || "(no diff)"}\n\`\`\``;
+        const content = `## Worktree: ${id}\n\n**Branch:** ${record.targetBranch || record.branch}\n**Path:** ${record.worktreePath}\n\n### Changed files\n\`\`\`\n${status.trim() || "(no changes)"}\n\`\`\`\n\n### Diff\n\`\`\`diff\n${diff.trim() || "(no diff)"}\n\`\`\``;
 
         pi.sendMessage({ customType: "worktree-diff", content, display: true });
       } catch (err: any) {
@@ -829,6 +829,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
         const lines = [
           `Created worktree: ${result.id}`,
           `Branch: ${params.branch || result.id}`,
+          `Internal branch: _wt/${params.branch || result.id}`,
           `Path: ${result.worktreePath}`,
           params.plan_path ? `Plan: ${params.plan_path}` : "",
           "",
@@ -897,7 +898,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
       sendKeysToSession(params.worktree_id, params.message);
 
       return {
-        content: [{ type: "text" as const, text: `Message sent to worktree "${params.worktree_id}".\n\nThe agent will process it as a new instruction. Use \`wt_context\` later to read back what it accomplished, or \`/wt-switch ${params.worktree_id}\` to view live.` }],
+        content: [{ type: "text" as const, text: `Message sent to worktree "${params.worktree_id}":\n\n> ${params.message.split("\n").join("\n> ")}\n\nThe agent will process it as a new instruction. Use \`wt_context\` later to read back what it accomplished, or \`/wt-switch ${params.worktree_id}\` to view live.` }],
         details: {},
       };
     },

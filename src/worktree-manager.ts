@@ -173,21 +173,23 @@ export class WorktreeManager {
       return deduplicateSlug(base, existing);
     });
 
-    const branch = opts?.branch || finalSlug;
+    const targetBranch = opts?.branch || finalSlug;
+    const internalBranch = `_wt/${targetBranch}`;
     const worktreePath = join(this.metaDir, finalSlug);
     const mainHead = git(["rev-parse", "HEAD"], { cwd: this.repoRoot });
 
     // Ensure .pi/git-worktrees/ exists
     mkdirSync(this.metaDir, { recursive: true });
 
-    // Create the worktree
-    git(["worktree", "add", "-B", branch, worktreePath, mainHead], { cwd: this.repoRoot });
+    // Create the worktree with internal branch — user can freely checkout targetBranch
+    git(["worktree", "add", "-B", internalBranch, worktreePath, mainHead], { cwd: this.repoRoot });
 
     const now = nowIso();
     const record: WorktreeRecord = {
       id: finalSlug,
       worktreePath: resolve(worktreePath),
-      branch,
+      branch: internalBranch,
+      targetBranch,
       status: "ready",
       task,
       createdAt: now,
@@ -315,7 +317,8 @@ export class WorktreeManager {
         registry.worktrees[dirName] = {
           id: dirName,
           worktreePath: dirPath,
-          branch: `wt-agent/${dirName}`,
+          branch: `_wt/${dirName}`,
+          targetBranch: dirName,
           status: "idle",
           task: "(restored from disk)",
           createdAt: now,
@@ -401,7 +404,8 @@ export class WorktreeManager {
     // Remove git worktree + directory, but keep registry entry for archival
     await this.destroyWorktreeFiles(record);
 
-    return { ok: true, message: `Merged ${record.branch} and cleaned up` };
+    const displayBranch = record.targetBranch || record.branch;
+    return { ok: true, message: `Merged ${displayBranch} and cleaned up` };
   }
 
   /**

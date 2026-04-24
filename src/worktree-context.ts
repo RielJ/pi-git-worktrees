@@ -98,7 +98,7 @@ function extractFromSession(rawJsonl: string, record: WorktreeRecord): string {
     `## Worktree Context: ${record.id}`,
     "",
     `**Task:** ${record.task}`,
-    `**Branch:** ${record.branch}`,
+    `**Branch:** ${record.targetBranch || record.branch}`,
     `**Status:** ${record.status}`,
   ];
 
