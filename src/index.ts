@@ -24,6 +24,7 @@ import { Type } from "@sinclair/typebox";
 import { fileURLToPath } from "node:url";
 import { WorktreeManager, resolveGitRoot } from "./worktree-manager.js";
 import { WorktreeSessionManager, detectWorktreeSession } from "./worktree-session.js";
+import { escapeSessionToMain } from "./auto-escape.js";
 import { WorktreeWidget } from "./worktree-widget.js";
 import { showWorktreesPanel, type PanelActionHandlers } from "./worktrees-panel.js";
 import type { WorktreeBoxData, WorktreeRecord } from "./types.js";
@@ -51,7 +52,6 @@ let wtSessionMgr: WorktreeSessionManager | null = null;
 let widget: WorktreeWidget | null = null;
 let currentCtx: ExtensionContext | null = null;
 let activeWorktreeId: string | null = null; // null = main
-let piRef: ExtensionAPI | null = null;
 let mainSessionPath: string | null = null;
 /** Cached registry records for getBoxData() */
 let cachedRegistryRecords: import("./types.js").WorktreeRecord[] = [];
@@ -119,8 +119,6 @@ function getBoxData(): WorktreeBoxData[] {
 // ── Extension ───────────────────────────────────────────────────────
 
 export default function piGitWorktrees(pi: ExtensionAPI) {
-  piRef = pi;
-
   // ── Cleanup on shutdown ─────────────────────────────────────────
 
   function onShutdown(): void {
@@ -160,12 +158,23 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
 
   // ── Lifecycle — session_start ─────────────────────────────────
 
-  pi.on("session_start", async (_event, ctx) => {
+  pi.on("session_start", async (event, ctx) => {
     try {
       currentCtx = ctx;
 
       const gitRoot = resolveGitRoot(ctx.cwd);
       if (!gitRoot) return;
+
+      // Fresh /new or new-terminal sessions started inside a worktree
+      // inherit the worktree directory. Bounce them to main instead.
+      // Worktree sessions (wt_new metadata) are never touched.
+      if (event.reason === "startup" || event.reason === "new") {
+        try {
+          if (!detectWorktreeSession(ctx)) escapeSessionToMain(ctx, gitRoot);
+        } catch (_e) {
+          void _e; // best-effort redirect; continue normal startup
+        }
+      }
 
       // Re-create managers if git root changed or on first load
       if (!manager || manager.getRepoRoot() !== gitRoot) {
@@ -472,6 +481,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
           customType: "worktree-context",
           content: summary,
           display: true,
+          details: { worktreeId: id },
         });
         return `Imported context from ${id}`;
       },
@@ -502,6 +512,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
               customType: "worktree-diff",
               content: `## Diff: ${record.targetBranch || record.branch}\n\`\`\`\n${diff}\n\`\`\``,
               display: true,
+              details: { worktreeId: id },
             });
             return `Diff shown for ${id}`;
           }
@@ -689,7 +700,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
 
         const content = `## Worktree: ${id}\n\n**Branch:** ${record.targetBranch || record.branch}\n**Path:** ${record.worktreePath}\n\n### Changed files\n\`\`\`\n${status.trim() || "(no changes)"}\n\`\`\`\n\n### Diff\n\`\`\`diff\n${diff.trim() || "(no diff)"}\n\`\`\``;
 
-        pi.sendMessage({ customType: "worktree-diff", content, display: true });
+        pi.sendMessage({ customType: "worktree-diff", content, display: true, details: { worktreeId: id } });
       } catch (err: any) {
         ctx.ui.notify(`Failed: ${err.message}`, "error");
       }
@@ -780,6 +791,7 @@ export default function piGitWorktrees(pi: ExtensionAPI) {
           customType: "worktree-context",
           content: summary,
           display: true,
+          details: { worktreeId: id },
         });
         ctx.ui.notify(`Imported context from ${id}`, "info");
       } catch (err: any) {
