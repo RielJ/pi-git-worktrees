@@ -38,12 +38,15 @@
     "README.md",
     "LICENSE"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "@mariozechner/pi-coding-agent": "*",
     "@mariozechner/pi-tui": "*",
     "@sinclair/typebox": "*"
   },
   "devDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
+    "@sinclair/typebox": "*",
     "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   },
