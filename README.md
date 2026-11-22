@@ -20,6 +20,7 @@ Parallel AI agent sessions using git worktrees for [Pi](https://github.com/mario
 - **Context sharing** — Pull compacted context from child worktrees back into main
 - **Automatic cleanup** — Merge, archive, or remove worktrees with full file/branch/session cleanup
 - **Heartbeat monitoring** — Real-time busy/idle detection across all worktree agents
+- **Fresh sessions start from main** — `/new` or a new terminal inside a worktree boots the session from the main repo root instead of inheriting the worktree directory
 
 ## Requirements
 
@@ -163,6 +164,16 @@ The interactive panel supports full keyboard navigation:
 - `c` — Import context
 - `/` — Show diff
 - `Esc` / `q` — Close panel
+
+### Fresh sessions start from main
+
+`/new` or a new terminal opened inside a worktree starts the session from the
+main repo root instead of inheriting the worktree directory. Sessions seeded
+by `wt_new` (which carry worktree metadata) are never redirected. Opt out with:
+
+```bash
+export PI_WT_NO_AUTO_ESCAPE=1
+```
 
 ## Orchestration
 
